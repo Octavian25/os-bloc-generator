@@ -1,0 +1,40 @@
+{
+  "name": "bloc-generator",
+  "displayName": "BLoC Generator",
+  "description": "Generate custom BLoC files",
+  "version": "0.0.1",
+  "publisher": "octa-studio-indonesia",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "activationEvents": [
+    "onCommand:extension.generateBloc",
+    "onCommand:extension.generateBlocEndless"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.generateBloc",
+        "title": "OSBLoC : New Bloc"
+      },
+      {
+        "command": "extension.generateBlocEndless",
+        "title": "OSBLoC : New Bloc Endless"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "extension.generateBloc",
+          "group": "navigation"
+        },
+        {
+          "command": "extension.generateBlocEndless",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "dependencies": {}
+}
