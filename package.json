@@ -1,9 +1,10 @@
 {
-  "name": "bloc-generator",
+  "name": "os-bloc-generator",
   "displayName": "BLoC Generator",
   "description": "Generate custom BLoC files",
   "version": "0.0.1",
   "publisher": "octa-studio-indonesia",
+  "repository": "https://github.com/Octavian25/os-bloc-generator",
   "engines": {
     "vscode": "^1.60.0"
   },

@@ -16,6 +16,7 @@ function toPascalCase(str) {
 
 function generateBlocFile(blocName, dirPath) {
   const snakeCaseBlocName = toSnakeCase(blocName);
+  const folderName = `${snakeCaseBlocName}_bloc`;
   const pascalCaseBlocName = toPascalCase(snakeCaseBlocName);
   const blocTemplate = `
 import 'package:bloc/bloc.dart';
@@ -26,8 +27,9 @@ part '${snakeCaseBlocName}_state.dart';
 
 class ${pascalCaseBlocName}Bloc extends Bloc<${pascalCaseBlocName}Event, ${pascalCaseBlocName}State> {
   //TODO : add your usecase here
-  ${pascalCaseBlocName}Bloc() : super(${pascalCaseBlocName}Initial()) {
+  ${pascalCaseBlocName}Bloc(this.) : super(${pascalCaseBlocName}Initial()) {
     on<Do${pascalCaseBlocName}>((event, emit) async {
+      emit(${pascalCaseBlocName}Loading());
     //TODO : change with your_usecase
       var response = await your_usecase.execute();
       response.fold((l) {
@@ -57,7 +59,7 @@ sealed class ${pascalCaseBlocName}State {}
 
 final class ${pascalCaseBlocName}Initial extends ${pascalCaseBlocName}State {}
 
-class ${pascalCaseBlocName}Loadings extends ${pascalCaseBlocName}State {}
+class ${pascalCaseBlocName}Loading extends ${pascalCaseBlocName}State {}
 
 class ${pascalCaseBlocName}Success extends ${pascalCaseBlocName}State {
   final List<String> datas;
@@ -72,7 +74,7 @@ class ${pascalCaseBlocName}Failure extends ${pascalCaseBlocName}State {
 `;
 
   try {
-    const blocDirPath = path.join(dirPath, snakeCaseBlocName);
+    const blocDirPath = path.join(dirPath, folderName);
     if (!fs.existsSync(blocDirPath)) {
       fs.mkdirSync(blocDirPath);
     }
@@ -101,6 +103,7 @@ class ${pascalCaseBlocName}Failure extends ${pascalCaseBlocName}State {
 
 function generateBlocEndlessFile(blocName, dirPath) {
   const snakeCaseBlocName = toSnakeCase(blocName);
+  const folderName = `${snakeCaseBlocName}_bloc`;
   const pascalCaseBlocName = toPascalCase(snakeCaseBlocName);
   const blocTemplate = `
 import 'package:bloc/bloc.dart';
@@ -111,14 +114,15 @@ part '${snakeCaseBlocName}_state.dart';
 
 class ${pascalCaseBlocName}Bloc extends Bloc<${pascalCaseBlocName}Event, ${pascalCaseBlocName}State> {
   //TODO : add your usecase here
-  ${pascalCaseBlocName}Bloc() : super(${pascalCaseBlocName}Initial()) {
+  ${pascalCaseBlocName}Bloc(this.) : super(${pascalCaseBlocName}State()) {
     on<Do${pascalCaseBlocName}>((event, emit) async {
+    emit(state.copyWith(isError: false, errorMessage: "", isLoading: false));
     //TODO : change with your_usecase
       var response = await your_usecase.execute();
       response.fold((l) {
-      emit(${pascalCaseBlocName}Failure(l.message));
+      emit(state.copyWith(isError: true, errorMessage: l.message, isLoading: false));
       }, (r){
-      emit(${pascalCaseBlocName}Success(r));
+      emit(state.copyWith(isError: false, errorMessage: "", isLoading: false, datas: r));
       });
     });
   }
@@ -138,7 +142,7 @@ class Do${pascalCaseBlocName} extends ${pascalCaseBlocName}Event {}
 part of '${snakeCaseBlocName}_bloc.dart';
 
 @immutable
-sealed class ${pascalCaseBlocName}State {
+class ${pascalCaseBlocName}State {
  final bool isLoading;
   final bool isError;
   final String errorMessage;
@@ -174,7 +178,7 @@ sealed class ${pascalCaseBlocName}State {
 `;
 
   try {
-    const blocDirPath = path.join(dirPath, snakeCaseBlocName);
+    const blocDirPath = path.join(dirPath, folderName);
     if (!fs.existsSync(blocDirPath)) {
       fs.mkdirSync(blocDirPath);
     }
@@ -205,12 +209,6 @@ function activate(context) {
   let disposable = vscode.commands.registerCommand(
     "extension.generateBloc",
     async (uri) => {
-      if (!blocName || !blocName.match(/^[a-zA-Z0-9_]+$/)) {
-        vscode.window.showErrorMessage(
-          "Invalid BLoC name. Only letters, numbers, and underscores are allowed."
-        );
-        return;
-      }
       if (!uri || !uri.fsPath) {
         vscode.window.showErrorMessage(
           "Please select a folder to generate the BLoC files."
@@ -222,6 +220,12 @@ function activate(context) {
       });
 
       if (blocName) {
+        if (!blocName || !blocName.match(/^[a-zA-Z0-9_]+$/)) {
+          vscode.window.showErrorMessage(
+            "Invalid BLoC name. Only letters, numbers, and underscores are allowed."
+          );
+          return;
+        }
         generateBlocFile(blocName, uri.fsPath);
         vscode.window.showInformationMessage(
           `BLoC files for ${blocName} created successfully in ${blocDirPath}!`
@@ -232,12 +236,6 @@ function activate(context) {
   let disposableEndless = vscode.commands.registerCommand(
     "extension.generateBlocEndless",
     async (uri) => {
-      if (!blocName || !blocName.match(/^[a-zA-Z0-9_]+$/)) {
-        vscode.window.showErrorMessage(
-          "Invalid BLoC name. Only letters, numbers, and underscores are allowed."
-        );
-        return;
-      }
       if (!uri || !uri.fsPath) {
         vscode.window.showErrorMessage(
           "Please select a folder to generate the BLoC files."
@@ -249,6 +247,12 @@ function activate(context) {
       });
 
       if (blocName) {
+        if (!blocName || !blocName.match(/^[a-zA-Z0-9_]+$/)) {
+          vscode.window.showErrorMessage(
+            "Invalid BLoC name. Only letters, numbers, and underscores are allowed."
+          );
+          return;
+        }
         generateBlocEndlessFile(blocName, uri.fsPath);
         vscode.window.showInformationMessage(
           `BLoC files for ${blocName} created successfully in ${blocDirPath}!`
